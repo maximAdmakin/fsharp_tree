@@ -10,6 +10,7 @@ let emptyTrieNode =
 
 let rec insert (word: string) (trieNode: TrieNode) =
     match word with
+    | null -> { trieNode with IsEndOfWord = true }
     | "" -> { trieNode with IsEndOfWord = true }
     | _ ->
         let (head, tail) = (word.[0], word.Substring(1))
@@ -38,9 +39,16 @@ let rec startsWith (prefix: string) (trieNode: TrieNode) =
         | Some(childNode) -> startsWith tail childNode
         | None -> false
 
-let rec map (f: 'T -> 'U) (trieNode: TrieNode) =
+let rec map f (trieNode: TrieNode) =
+    let mapChild (acc: Map<char,TrieNode>) (k: char) (v: TrieNode) =
+        let newKey = f k
+        let newValue = map f v
+        acc.Add(newKey, newValue)
+    
+    let mappedChildren = trieNode.Children |> Map.fold mapChild Map.empty<char, TrieNode>
+    
     { IsEndOfWord = trieNode.IsEndOfWord;
-      Children = trieNode.Children |> Map.map (fun _ child -> map f child) }
+      Children = mappedChildren }
 
 let rec leftfold f state trieNode =
     trieNode.Children 
@@ -48,6 +56,17 @@ let rec leftfold f state trieNode =
 
 let rec rightfold f state trieNode =
     trieNode.Children 
-    |> Map.fold (fun _ char childNode -> rightfold f state childNode |> f char) state
-    |> f ' '
+    |> Map.fold (fun acc char childNode -> rightfold f acc childNode |> f char) state
 
+let treeFromList list = List.fold (fun tree x -> insert x tree) emptyTrieNode list
+
+let rec merge (t1: TrieNode) (t2: TrieNode) =
+    let mergedChildren =
+        Seq.append (t1.Children |> Map.toSeq) (t2.Children |> Map.toSeq)
+        |> Seq.groupBy fst
+        |> Seq.map (fun (c, childSeq) ->
+            let mergedChild = childSeq |> Seq.map snd |> Seq.reduce merge
+            c, mergedChild)
+        |> Map.ofSeq
+    { IsEndOfWord = t1.IsEndOfWord || t2.IsEndOfWord
+      Children = mergedChildren }
