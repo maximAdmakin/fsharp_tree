@@ -30,11 +30,11 @@ jobs:
       run: dotnet build --no-restore
     - name: Lint 
       run: |
-        dotnet fsharplint lint Prog.fs
+        dotnet fsharplint lint Program.fs
         dotnet fsharplint lint Tests.fs
     - name: Format 
       run: |
         fantomas Tests.fs
-        fantomas Prog.fs
+        fantomas Program.fs
     - name: Test
       run: dotnet test --no-build --verbosity normal
