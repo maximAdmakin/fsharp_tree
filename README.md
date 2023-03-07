@@ -5,7 +5,30 @@
 <b>Преподаватель:</b> Пенской Александр Владимирович
 
 ### Двоичное дерево поиска на F#
-главный тип union из Node и Leaf. Node содержит значение некоторого универсального типа T и два дочерних узла, которые также являются деревьями.
+главный тип TrieNode бывает либо IsEndOfWord либо промежуточной нодой. Строка представляеться путём в дереве.
+
+```
+(t |> insert "qwe" |> insert "qas"|> insert "asd")
+{ IsEndOfWord = false
+  Children =
+   map
+     [('a',
+       { IsEndOfWord = false
+         Children =
+          map [('s', { IsEndOfWord = false
+                       Children = map [('d', { IsEndOfWord = true
+                                               Children = map [] })] })] });
+      ('q',
+       { IsEndOfWord = false
+         Children =
+          map
+            [('a', { IsEndOfWord = false
+                     Children = map [('s', { IsEndOfWord = true
+                                             Children = map [] })] });
+             ('w', { IsEndOfWord = false
+                     Children = map [('e', { IsEndOfWord = true
+                                             Children = map [] })] })] })] }
+```
 
 ```f#
 module Prog
